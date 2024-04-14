@@ -12,7 +12,7 @@ class LoginController extends Controller {
             $flash = $_SESSION['flash'];
             $_SESSION['FLASH'] = '';
         }
-        $this->render('login', [
+        $this->render('signin', [
             'flash' => $flash
         ]);
     }
@@ -32,17 +32,54 @@ class LoginController extends Controller {
                 $this->redirect('/login');
             }
         } else {
-            $_SESSION['flash'] = 'Digite os campos de email e/ou senha.';
+            // $_SESSION['flash'] = 'Digite os campos de email e/ou senha.';
             $this->redirect('/login');
         }
 
     }
 
     public function signup() {
-        echo 'Cadastro.';
+        $flash = '';
+        if(!empty($_SESSION['flash'])) {
+            $flash = $_SESSION['flash'];
+            $_SESSION['FLASH'] = '';
+        }
+        $this->render('signup', [
+            'flash' => $flash
+        ]);
     }
 
-}
+    public function signupAction() {
+        $name       = filter_input(INPUT_POST, 'name');
+        $email      = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+        $password   = filter_input(INPUT_POST, 'password');
+        $birthdate  = filter_input(INPUT_POST, 'birthdate');
 
-// MODULO 12 - AULA 09
-// TO BE CONTINUED...
+        if($name && $email && $password && $birthdate) {
+
+            $birthdate = explode('/', $birthdate);
+            if(count($birthdate) != 3) {
+                $_SESSION['flash'] = 'Data de nascimento inválida!';
+                $this->redirect('/cadastro');
+            }
+            // TRASNFORMA A DATA NO PADRÃO AMERICANO
+            $birthdate = $birthdate[2].'-'.$birthdate[1].'-'.$birthdate[0];
+                // VERIFICA SE A DATA É VALIDA
+            if(strtotime($birthdate) === false) {
+                $_SESSION['flash'] = 'Data de nascimento inválida!';
+                $this->redirect('/cadastro');
+            } 
+            // REALIZAR CADASTRO
+            if(LoginHandler::emailExists($email) === false) {
+                $token = LoginHandler::addUser($name, $email, $password, $birthdate);
+                $_SESSION['token'] = $token;
+                $this->redirect('/');
+            } else {
+                $_SESSION['flash'] = 'E-mail já cadastrado!';
+                $this->redirect('/cadastro');
+            }
+        } else {
+            $this->redirect('/cadastro');
+        }
+    }
+}
