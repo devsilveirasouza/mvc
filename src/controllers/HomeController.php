@@ -7,7 +7,7 @@ use \src\handlers\LoginHandler;
 
 class HomeController extends Controller
 {
-
+    // ARMAZENA O USUARIO LOGADO
     private $loggedUser;
 
     public function __construct()
