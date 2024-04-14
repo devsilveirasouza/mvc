@@ -7,7 +7,14 @@ use \src\handlers\LoginHandler;
 class LoginController extends Controller {
 
     public function signin() {
-        $this->render('login');
+        $flash = '';
+        if(!empty($_SESSION['flash'])) {
+            $flash = $_SESSION['flash'];
+            $_SESSION['FLASH'] = '';
+        }
+        $this->render('login', [
+            'flash' => $flash
+        ]);
     }
 
     public function signinAction() {
@@ -19,14 +26,14 @@ class LoginController extends Controller {
             $token = LoginHandler::verifyLogin($email, $password);
             if($token) {
                 $_SESSION['token'] = $token;
+                $this->redirect('/');
             } else {
                 $_SESSION['flash'] = 'E-mail e/ou senha não conferem.';
-                
+                $this->redirect('/login');
             }
-
         } else {
             $_SESSION['flash'] = 'Digite os campos de email e/ou senha.';
-            $this->redirect('login');
+            $this->redirect('/login');
         }
 
     }
